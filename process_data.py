@@ -3,10 +3,11 @@ import pandas as pd
 import os
 from keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
 
 
 def load_data(type):
-    data_dir = './data'
+    data_dir = 'E:\\比赛数据\\jet_simple_data'
     if type == 'train':
         data = pd.read_csv(os.path.join(data_dir, 'simple_train_R04_jet.csv'))
         label = data['label'].values
@@ -17,7 +18,8 @@ def load_data(type):
         data = pd.read_csv(os.path.join(data_dir, 'simple_test_R04_jet.csv'))
         id = data['jet_id'].values
 
-    dataSet = data[['number_of_particles_in_this_jet', 'jet_px', 'jet_py', 'jet_pz', 'jet_energy', 'jet_mass']].values
+    data_new = feature_process(data)
+    dataSet = data_new[['number_of_particles_in_this_jet', 'jet_px', 'jet_py', 'jet_pz', 'jet_energy', 'jet_mass']].values
 
     if type == 'train':
         x_train, x_test, y_train, y_test = train_test_split(dataSet, labelSet, test_size=0.2, random_state=42,
@@ -37,4 +39,55 @@ def output_data(predict, id):
     d.to_csv('result.csv', encoding='utf-8', index=False, sep=',')
 
 
+def feature_process(data):
+    """
+    :param data: DataFrame
+    :return:
+    """
+    number = data['number_of_particles_in_this_jet'].values
+    num_max = np.max(number)
+    data['number_of_particles_in_this_jet'] = number/num_max
+    energy = data['jet_energy'].values
+    energy_max = np.max(energy)
+    data['jet_energy'] = energy/energy_max
+    mass = data['jet_mass'].values
+    mass_max = np.max(mass)
+    data['jet_mass'] = mass/mass_max
+    x = data['jet_px'].values
+    y = data['jet_py'].values
+    z = data['jet_pz'].values
+    feature1 = (x**2+y**2+z**2)**0.5
+    data['feature1'] = feature1
+    data['jet_px'] = x/feature1
+    data['jet_py'] = y/feature1
+    data['jet_pz'] = z/feature1
+    return data
 
+
+def data_analize(data):
+    energy = data['jet_energy'].values
+    mass = data['jet_mass'].values
+    label = data['label'].values
+    c = []
+    for x in label:
+        if x == 1:
+            c.append('r')
+        elif x == 4:
+            c.append('g')
+        elif x == 5:
+            c.append('b')
+        elif x == 21:
+            c.append('y')
+        else:
+            print(type(x))
+            print('error')
+            break
+    plt.scatter(energy, mass, c=c, linewidths=0.1)
+    plt.savefig('./pic/analize/energy-mass.png')
+    plt.show()
+
+
+if __name__ == '__main__':
+    data_dir = 'E:\\比赛数据\\jet_simple_data'
+    data = pd.read_csv(os.path.join(data_dir, 'simple_train_R04_jet.csv'))
+    data_analize(data)

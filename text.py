@@ -1,5 +1,6 @@
-from keras.utils import to_categorical
+import matplotlib.pyplot as plt
 
-a = [[1],[5],[4], [21], [1]]
-r = to_categorical(a)
-print(r)
+a = [1, 2,3,4,5]
+b = [1,2,3,4,5]
+plt.scatter(a, b, c=[1, 2, 3, 4, 4])
+plt.show()
